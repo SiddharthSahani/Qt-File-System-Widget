@@ -99,7 +99,7 @@ widget.set_icon_provder(CustomIconProvider())
 ---
 ### TODO (after initial commit)
 - A workaround for removing a directory
-- Implement Drag and drop for moving items around
+- Implement drag and drop for moving items around
 - Setting up user-defined conditions for creating/renaming/removing items
 
 ---
