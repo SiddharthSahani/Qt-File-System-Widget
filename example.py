@@ -22,7 +22,7 @@ exclude_patterns = [
 ]
 
 # configurations
-config = Config(can_rename_file=False, can_rename_dir=False)
+config = Config(can_rename_file=False, can_rename_dir=False, confirm_removal=False)
 
 
 wid = FileSystemWidget(roots, exclude_patterns=exclude_patterns, config=config)

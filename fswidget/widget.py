@@ -4,6 +4,7 @@ from PyQt5 import QtWidgets, QtCore
 from .view import FileSystemView
 from .new_item_dialog import NewItemDialog
 from .rename_item_dialog import RenameItemDialog
+from .confirm_delete_dialog import ConfirmDeleteDialog
 from .import file_handling
 
 
@@ -14,6 +15,7 @@ class Config(NamedTuple):
     can_create_dir: bool = True
     can_rename_dir: bool = True
     can_remove_dir: bool = False
+    confirm_removal: bool = True
 
 
 class FileSystemWidget(QtWidgets.QMainWindow):
@@ -72,6 +74,9 @@ class FileSystemWidget(QtWidgets.QMainWindow):
     
     def _handle_context_menu(self, pos: QtCore.QPoint) -> None:
         view_idx = self._get_view_idx(pos)
+        if view_idx == -1:
+            return
+        
         proxy_index = self._get_proxy_index(view_idx, pos)
         fileinfo = self.get_info(view_idx, proxy_index)
         path = fileinfo.filePath()
@@ -84,7 +89,7 @@ class FileSystemWidget(QtWidgets.QMainWindow):
                 if self.config.can_rename_file:
                     menu.addAction("Rename file", lambda: self._rename_file(view_idx, fileinfo.dir().path(), fileinfo.fileName()))
                 if self.config.can_remove_file:
-                    menu.addAction("Remove file", lambda: self._remove_file(path))
+                    menu.addAction("Remove file", lambda: self._remove_file(view_idx, path))
             else:
                 if self.config.can_create_file:
                     menu.addAction("New file", lambda: self._create_new_file(view_idx, path))
@@ -92,8 +97,8 @@ class FileSystemWidget(QtWidgets.QMainWindow):
                     menu.addAction("New subdir", lambda: self._create_new_dir(view_idx, path))
                 if self.config.can_rename_dir:
                     menu.addAction("Rename dir", lambda: self._rename_dir(view_idx, fileinfo.dir().path(), fileinfo.fileName()))
-                if self.config.can_remove_file:
-                    menu.addAction("Remove dir", lambda: self._remove_dir(path))
+                if self.config.can_remove_dir:
+                    menu.addAction("Remove dir", lambda: self._remove_dir(view_idx, path))
             menu.addAction("Copy relative path", lambda: QtWidgets.QApplication.clipboard().setText(QtCore.QDir(self.roots[view_idx]).relativeFilePath(path)))
             menu.addAction("Copy full path", lambda: QtWidgets.QApplication.clipboard().setText(path))
         else:
@@ -133,12 +138,20 @@ class FileSystemWidget(QtWidgets.QMainWindow):
         dia.rename_request.connect(func)
         dia.exec()
     
-    def _remove_dir(self, dirpath: str) -> None:
+    def _remove_dir(self, view_idx: int, dirpath: str) -> None:
+        def func():
+            if file_handling.remove_dir(parent_dirpath, name):
+                self.dir_removed.emit(info.filePath())
+
         info = QtCore.QFileInfo(dirpath)
         parent_dirpath = info.dir().path()
         name = info.fileName()
-        if file_handling.remove_dir(parent_dirpath, name):
-            self.dir_removed.emit(info.filePath())
+        if self.config.confirm_removal:
+            dia = ConfirmDeleteDialog(self, self.roots[view_idx], dirpath)
+            dia.confirmed.connect(func)
+            dia.exec()
+        else:
+            func()
 
     def _create_new_file(self, view_idx: int, dirpath: str) -> None:
         def func(name: str) -> None:
@@ -158,14 +171,20 @@ class FileSystemWidget(QtWidgets.QMainWindow):
         dia.rename_request.connect(func)
         dia.exec()
 
-    def _remove_file(self, filepath: str) -> None:
+    def _remove_file(self, view_idx: int, filepath: str) -> None:
+        def func():
+            if file_handling.remove_file(dirpath, name):
+                self.file_removed.emit(filepath)
+
         info = QtCore.QFileInfo(filepath)
         dirpath = info.dir().path()
         name = info.fileName()
-        if file_handling.remove_file(dirpath, name):
-            self.file_removed.emit(filepath)
+        if self.config.confirm_removal:
+            dia = ConfirmDeleteDialog(self, self.roots[view_idx], filepath)
+            dia.confirmed.connect(func)
+            dia.exec()
         else:
-            QtWidgets.QErrorMessage()
+            func()
 
     def _open_file(self, filepath: str) -> None:
         self.open_file_request.emit(filepath)

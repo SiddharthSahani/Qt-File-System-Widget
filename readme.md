@@ -32,6 +32,8 @@
 - can_create_dir
 - can_rename_dir
 - can_remove_dir
+- confirm_removal
+
 ### By default everything is true except for can_remove_dir due to a bug
 ### Removing a file or directory moves it to trash and does not permanately delete it
 
@@ -94,12 +96,13 @@ widget.set_icon_provder(CustomIconProvider())
 ## How it works
 - Widget contains a list of QTreeView displayed using QSplitter
 - Each view displays a filtered QFileSystemModel
-- Filtering is done using a subclass of QSortFilterProxyModel and fnmatch
+- Filtering is done by fnmatch and subclassing QSortFilterProxyModel
 
 ---
 ### TODO (after initial commit)
-- A workaround for removing a directory
-- Implement drag and drop for moving items around
-- Setting up user-defined conditions for creating/renaming/removing items
+- [x] Ask for confirmation when removing an item
+- [ ] A workaround for removing a directory
+- [ ] Implement drag and drop for moving items around
+- [ ] Setting up user-defined conditions for creating/renaming/removing items
 
 ---
