@@ -6,11 +6,11 @@ from .file_handling import exists, add_path
 class RenameItemDialog(QtWidgets.QDialog):
     rename_request = QtCore.pyqtSignal(str)
 
-    def __init__(self, parent: QtWidgets.QWidget, proj_dir: str, parent_dir: str, name: str, is_file: bool):
+    def __init__(self, parent: QtWidgets.QWidget, proj_dir: str, parent_dir: str, name: str):
         super().__init__(parent, QtCore.Qt.WindowType.Popup)
         self.proj_dir = proj_dir
         self.parent_dir = parent_dir
-        self.is_file = is_file
+        self.is_file = QtCore.QFileInfo(QtCore.QDir(parent_dir).filePath(name)).isFile()
 
         label_1 = QtWidgets.QLabel(f"Project name: {QtCore.QDir(proj_dir).dirName()}")
         label_2 = QtWidgets.QLabel(f"Rename {'file' if self.is_file else 'dir'} from: {name}")

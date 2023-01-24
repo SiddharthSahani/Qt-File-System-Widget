@@ -134,7 +134,7 @@ class FileSystemWidget(QtWidgets.QMainWindow):
             if file_handling.rename_dir(dirpath, name, new_name):
                 self.dir_renamed.emit(file_handling.add_path(dirpath, name), file_handling.add_path(dirpath, new_name))
         
-        dia = RenameItemDialog(self, self.roots[view_idx], dirpath, name, False)
+        dia = RenameItemDialog(self, self.roots[view_idx], dirpath, name)
         dia.rename_request.connect(func)
         dia.exec()
     
@@ -167,7 +167,7 @@ class FileSystemWidget(QtWidgets.QMainWindow):
             if file_handling.rename_file(dirpath, name, new_name):
                 self.file_renamed.emit(file_handling.add_path(dirpath, name), file_handling.add_path(dirpath, new_name))
         
-        dia = RenameItemDialog(self, self.roots[view_idx], dirpath, name, True)
+        dia = RenameItemDialog(self, self.roots[view_idx], dirpath, name)
         dia.rename_request.connect(func)
         dia.exec()
 
